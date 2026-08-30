@@ -33,6 +33,7 @@ jobs:
         run: npm run build
         env:
           GITHUB_PAGES: "true"
+          NEXT_PUBLIC_API_URL: https://moneyflow-api-8ati.onrender.com
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
