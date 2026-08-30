@@ -23,6 +23,8 @@ Every push to `main` deploys the static frontend to GitHub Pages. The preview UR
 
 This preview uses demo data and browser-local storage. Do not enter real financial information; the backend/authentication integration is not connected to this public preview yet.
 
+When the backend is deployed, set `NEXT_PUBLIC_API_URL` before building the frontend. The app will then use the backend session flow and display the username/password screen instead of anonymous demo mode. Never commit that value if it contains a private URL or any secret; the API URL itself is normally public, while database and JWT secrets belong only in backend hosting configuration.
+
 ## Backend development
 
 ```bash
