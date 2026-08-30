@@ -1,0 +1,13 @@
+.profile-button {
+  width: 100%;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.amount {
+  margin-left: auto;
+  font-size: 13px;
+}
