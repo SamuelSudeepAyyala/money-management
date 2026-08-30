@@ -8,7 +8,11 @@ export function usePersistentState<T>(key: string, initialValue: T): [T, Dispatc
   useEffect(() => {
     setValue(readDemoValue(key, initialValue));
     setLoaded(true);
-  }, [initialValue, key]);
+  // Load once per storage key. Including an inline initial array here causes
+  // feature pages to reset during ordinary parent renders, which looks like
+  // flicker when switching between budgets, loans, and goals.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   useEffect(() => {
     if (loaded) writeDemoValue(key, value);
@@ -16,4 +20,3 @@ export function usePersistentState<T>(key: string, initialValue: T): [T, Dispatc
 
   return [value, setValue];
 }
-
