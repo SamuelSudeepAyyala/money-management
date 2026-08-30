@@ -50,6 +50,12 @@ def test_register_login_and_private_records() -> None:
     assert client.get("/api/budgets", headers=friend_headers).json() == []
     assert client.get("/api/loans", headers=friend_headers).json() == []
     assert client.get("/api/goals", headers=friend_headers).json() == []
+    loan_id = loan.json()["id"]
+    payment = client.post(f"/api/loans/{loan_id}/payments", headers=headers, json={"amount": "223.67", "principal_amount": "180.00", "interest_amount": "43.67", "paid_on": "2026-09-11"})
+    assert payment.status_code == 201
+    assert len(client.get(f"/api/loans/{loan_id}/payments", headers=headers).json()) == 1
+    assert client.get(f"/api/loans/{loan_id}/payments", headers=friend_headers).status_code == 404
+    assert client.delete(f"/api/loans/{loan_id}/payments/{payment.json()['id']}", headers=headers).status_code == 204
     assert client.delete(f"/api/budgets/{budget.json()['id']}", headers=headers).status_code == 204
     assert client.delete(f"/api/loans/{loan.json()['id']}", headers=headers).status_code == 204
     assert client.delete(f"/api/goals/{goal.json()['id']}", headers=headers).status_code == 204

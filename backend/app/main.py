@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .config import settings
 from .db import Base, engine, get_db
 from .dependencies import current_user
-from .models import Account, Budget, Goal, Loan, Transaction, User
+from .models import Account, Budget, Goal, Loan, LoanPayment, Transaction, User
 from .schemas import (
     AccountCreate,
     AccountResponse,
@@ -18,6 +18,8 @@ from .schemas import (
     GoalResponse,
     LoginRequest,
     LoanCreate,
+    LoanPaymentCreate,
+    LoanPaymentResponse,
     LoanResponse,
     RegisterRequest,
     TokenResponse,
@@ -163,6 +165,43 @@ def delete_loan(loan_id: int, user: User = Depends(current_user), db: Session = 
     if not loan:
         raise HTTPException(status_code=404, detail="Loan not found")
     db.delete(loan)
+    db.commit()
+
+
+@app.get("/api/loans/{loan_id}/payments", response_model=list[LoanPaymentResponse])
+def list_loan_payments(loan_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[LoanPayment]:
+    loan = db.scalar(select(Loan).where(Loan.id == loan_id, Loan.user_id == user.id))
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    return list(db.scalars(select(LoanPayment).where(LoanPayment.loan_id == loan_id, LoanPayment.user_id == user.id).order_by(LoanPayment.paid_on.desc(), LoanPayment.id.desc())).all())
+
+
+@app.post("/api/loans/{loan_id}/payments", response_model=LoanPaymentResponse, status_code=status.HTTP_201_CREATED)
+def create_loan_payment(loan_id: int, payload: LoanPaymentCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> LoanPayment:
+    loan = db.scalar(select(Loan).where(Loan.id == loan_id, Loan.user_id == user.id))
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    if payload.principal_amount + payload.interest_amount != payload.amount:
+        raise HTTPException(status_code=422, detail="Principal and interest must equal the payment amount")
+    if payload.principal_amount > loan.remaining_balance:
+        raise HTTPException(status_code=422, detail="Principal cannot exceed the remaining loan balance")
+    payment = LoanPayment(user_id=user.id, loan_id=loan.id, **payload.model_dump())
+    loan.remaining_balance -= payload.principal_amount
+    db.add(payment)
+    db.commit()
+    db.refresh(payment)
+    return payment
+
+
+@app.delete("/api/loans/{loan_id}/payments/{payment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_loan_payment(loan_id: int, payment_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    payment = db.scalar(select(LoanPayment).where(LoanPayment.id == payment_id, LoanPayment.loan_id == loan_id, LoanPayment.user_id == user.id))
+    if not payment:
+        raise HTTPException(status_code=404, detail="Loan payment not found")
+    loan = db.scalar(select(Loan).where(Loan.id == loan_id, Loan.user_id == user.id))
+    if loan:
+        loan.remaining_balance += payment.principal_amount
+    db.delete(payment)
     db.commit()
 
 

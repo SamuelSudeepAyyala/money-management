@@ -78,6 +78,20 @@ class LoanResponse(LoanCreate):
     id: int
 
 
+class LoanPaymentCreate(BaseModel):
+    amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+    principal_amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+    interest_amount: Decimal = Field(default=Decimal("0.00"), ge=0, max_digits=14, decimal_places=2)
+    paid_on: date = date.today()
+    note: str | None = Field(default=None, max_length=2000)
+
+
+class LoanPaymentResponse(LoanPaymentCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    loan_id: int
+
+
 class GoalCreate(BaseModel):
     name: str = Field(min_length=1, max_length=160)
     target_amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2)

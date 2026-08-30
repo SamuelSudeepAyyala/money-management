@@ -19,6 +19,7 @@ class User(Base):
     transactions: Mapped[list["Transaction"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     budgets: Mapped[list["Budget"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     loans: Mapped[list["Loan"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    loan_payments: Mapped[list["LoanPayment"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     goals: Mapped[list["Goal"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
@@ -76,6 +77,23 @@ class Loan(Base):
     due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     user: Mapped[User] = relationship(back_populates="loans")
+    payments: Mapped[list["LoanPayment"]] = relationship(back_populates="loan", cascade="all, delete-orphan")
+
+
+class LoanPayment(Base):
+    __tablename__ = "loan_payments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    loan_id: Mapped[int] = mapped_column(ForeignKey("loans.id", ondelete="CASCADE"), index=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    principal_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    interest_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=0)
+    paid_on: Mapped[date] = mapped_column(Date, default=date.today)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    user: Mapped[User] = relationship(back_populates="loan_payments")
+    loan: Mapped[Loan] = relationship(back_populates="payments")
 
 
 class Goal(Base):
