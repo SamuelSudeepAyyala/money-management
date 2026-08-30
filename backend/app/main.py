@@ -103,3 +103,12 @@ def create_transaction(payload: TransactionCreate, user: User = Depends(current_
     db.commit()
     db.refresh(transaction)
     return transaction
+
+
+@app.delete("/api/transactions/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_transaction(transaction_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    transaction = db.scalar(select(Transaction).where(Transaction.id == transaction_id, Transaction.user_id == user.id))
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    db.delete(transaction)
+    db.commit()

@@ -1,4 +1,6 @@
 export type ApiUser = { id: number; email: string; display_name: string };
+export type ApiAccount = { id: number; name: string; account_type: string; currency: string; opening_balance: number };
+export type ApiTransaction = { id: number; account_id: number; transaction_type: "expense" | "income"; amount: number; name: string; category: string; notes?: string; occurred_on: string };
 
 export const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
@@ -18,3 +20,10 @@ export const authApi = {
   logout: () => request<void>("/api/auth/logout", { method: "POST" })
 };
 
+export const financeApi = {
+  accounts: () => request<ApiAccount[]>("/api/accounts"),
+  createAccount: (account: Omit<ApiAccount, "id">) => request<ApiAccount>("/api/accounts", { method: "POST", body: JSON.stringify(account) }),
+  transactions: () => request<ApiTransaction[]>("/api/transactions"),
+  createTransaction: (transaction: Omit<ApiTransaction, "id">) => request<ApiTransaction>("/api/transactions", { method: "POST", body: JSON.stringify(transaction) }),
+  deleteTransaction: (id: string) => request<void>(`/api/transactions/${id}`, { method: "DELETE" })
+};

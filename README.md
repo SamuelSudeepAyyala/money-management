@@ -25,6 +25,8 @@ This preview uses demo data and browser-local storage. Do not enter real financi
 
 When the backend is deployed, set `NEXT_PUBLIC_API_URL` before building the frontend. The app will then use the backend session flow and display the username/password screen instead of anonymous demo mode. Never commit that value if it contains a private URL or any secret; the API URL itself is normally public, while database and JWT secrets belong only in backend hosting configuration.
 
+With the API URL configured, authenticated accounts and transactions are loaded from the backend. Budget, loan, and goal records remain browser-local until their database models are added.
+
 ## Backend development
 
 ```bash

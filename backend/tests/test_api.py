@@ -32,6 +32,8 @@ def test_register_login_and_private_records() -> None:
     assert transaction.status_code == 201
     assert len(client.get("/api/transactions", headers=headers).json()) == 1
     assert client.get("/api/me").json()["email"] == "sam@example.com"
+    assert client.delete(f"/api/transactions/{transaction.json()['id']}", headers=headers).status_code == 204
+    assert client.get("/api/transactions", headers=headers).json() == []
 
     second = client.post("/api/auth/register", json={"email": "friend@example.com", "display_name": "Friend", "password": "another-strong-password"})
     friend_token = second.json()["access_token"]
