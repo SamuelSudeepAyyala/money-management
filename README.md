@@ -14,3 +14,11 @@ npm run dev
 ```
 
 Open `http://localhost:3000`. To test from a phone on the same network, run Next with `npm run dev -- --hostname 0.0.0.0` and open the computer's local IP address from the phone.
+
+## GitHub Pages preview
+
+Every push to `main` deploys the static frontend to GitHub Pages. The preview URL is:
+
+`https://samuelsudeepayyala.github.io/money-management/`
+
+This preview uses demo data. Do not enter real financial information until the backend and authentication are implemented.
