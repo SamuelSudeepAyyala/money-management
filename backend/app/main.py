@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -22,6 +23,11 @@ from .security import create_access_token, hash_password, verify_password
 
 
 app = FastAPI(title="MoneyFlow API", version="0.1.0")
+app.add_middleware(CORSMiddleware, allow_origins=settings.allowed_origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+
+def attach_auth_cookie(response: Response, token: str) -> None:
+    response.set_cookie("moneyflow_access_token", token, httponly=True, secure=settings.environment != "development", samesite="none" if settings.environment != "development" else "lax", max_age=settings.access_token_minutes * 60, path="/")
 
 
 @app.on_event("startup")
@@ -35,7 +41,7 @@ def health() -> dict[str, str]:
 
 
 @app.post("/api/auth/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+def register(payload: RegisterRequest, response: Response, db: Session = Depends(get_db)) -> TokenResponse:
     email = payload.email.lower()
     if db.scalar(select(User).where(User.email == email)):
         raise HTTPException(status_code=409, detail="An account with this email already exists")
@@ -43,15 +49,24 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
     db.add(user)
     db.commit()
     db.refresh(user)
-    return TokenResponse(access_token=create_access_token(user.id), user=user)
+    token = create_access_token(user.id)
+    attach_auth_cookie(response, token)
+    return TokenResponse(access_token=token, user=user)
 
 
 @app.post("/api/auth/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)) -> TokenResponse:
     user = db.scalar(select(User).where(User.email == payload.email.lower()))
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    return TokenResponse(access_token=create_access_token(user.id), user=user)
+    token = create_access_token(user.id)
+    attach_auth_cookie(response, token)
+    return TokenResponse(access_token=token, user=user)
+
+
+@app.post("/api/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(response: Response) -> None:
+    response.delete_cookie("moneyflow_access_token", path="/")
 
 
 @app.get("/api/me", response_model=UserResponse)
