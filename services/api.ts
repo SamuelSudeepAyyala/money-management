@@ -3,6 +3,7 @@ export type ApiAccount = { id: number; name: string; account_type: string; curre
 export type ApiTransaction = { id: number; account_id: number; transaction_type: "expense" | "income"; amount: number; name: string; category: string; notes?: string; occurred_on: string };
 export type ApiBudget = { id: number; category: string; monthly_limit: number };
 export type ApiLoan = { id: number; name: string; remaining_balance: number; minimum_payment: number; interest_rate: number; due_date?: string };
+export type ApiLoanPayment = { id: number; loan_id: number; amount: number; principal_amount: number; interest_amount: number; paid_on: string; note?: string };
 export type ApiGoal = { id: number; name: string; target_amount: number; current_amount: number; target_date?: string };
 
 export const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
@@ -35,6 +36,9 @@ export const financeApi = {
   loans: () => request<ApiLoan[]>("/api/loans"),
   createLoan: (loan: Omit<ApiLoan, "id">) => request<ApiLoan>("/api/loans", { method: "POST", body: JSON.stringify(loan) }),
   deleteLoan: (id: string) => request<void>(`/api/loans/${id}`, { method: "DELETE" }),
+  loanPayments: (loanId: string) => request<ApiLoanPayment[]>(`/api/loans/${loanId}/payments`),
+  createLoanPayment: (loanId: string, payment: Omit<ApiLoanPayment, "id" | "loan_id">) => request<ApiLoanPayment>(`/api/loans/${loanId}/payments`, { method: "POST", body: JSON.stringify(payment) }),
+  deleteLoanPayment: (loanId: string, paymentId: string) => request<void>(`/api/loans/${loanId}/payments/${paymentId}`, { method: "DELETE" }),
   goals: () => request<ApiGoal[]>("/api/goals"),
   createGoal: (goal: Omit<ApiGoal, "id">) => request<ApiGoal>("/api/goals", { method: "POST", body: JSON.stringify(goal) }),
   deleteGoal: (id: string) => request<void>(`/api/goals/${id}`, { method: "DELETE" })

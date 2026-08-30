@@ -3,6 +3,7 @@ import "./globals.css";
 import "./workspace.css";
 import "./interaction-fixes.css";
 import "./feature-fixes.css";
+import "./loan-fixes.css";
 
 export const metadata: Metadata = {
   title: "Money Management",
