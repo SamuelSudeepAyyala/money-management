@@ -96,6 +96,15 @@ def create_account(payload: AccountCreate, user: User = Depends(current_user), d
     return account
 
 
+@app.delete("/api/accounts/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
+def archive_account(account_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    account = db.scalar(select(Account).where(Account.id == account_id, Account.user_id == user.id, Account.is_archived.is_(False)))
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    account.is_archived = True
+    db.commit()
+
+
 @app.get("/api/transactions", response_model=list[TransactionResponse])
 def list_transactions(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Transaction]:
     return list(db.scalars(select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.occurred_on.desc(), Transaction.id.desc())).all())
