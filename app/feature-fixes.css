@@ -1,0 +1,23 @@
+.feature-record {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  max-width: 100%;
+  margin-bottom: 10px;
+}
+
+.feature-record span {
+  overflow-wrap: anywhere;
+}
+
+.feature-record .delete-link {
+  flex: 0 0 auto;
+}
+
+.feature-form {
+  max-width: 360px;
+  margin: 0 auto;
+  text-align: left;
+}
