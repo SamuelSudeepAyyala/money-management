@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from fastapi import Depends, FastAPI, HTTPException, Response, status
@@ -48,6 +49,14 @@ def create_tables() -> None:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "environment": settings.environment}
+
+
+@app.get("/api/export")
+def export_finances(user: User = Depends(current_user), db: Session = Depends(get_db)) -> dict[str, object]:
+    records = {"accounts": db.scalars(select(Account).where(Account.user_id == user.id)).all(), "transactions": db.scalars(select(Transaction).where(Transaction.user_id == user.id)).all(), "budgets": db.scalars(select(Budget).where(Budget.user_id == user.id)).all(), "loans": db.scalars(select(Loan).where(Loan.user_id == user.id)).all(), "loan_payments": db.scalars(select(LoanPayment).where(LoanPayment.user_id == user.id)).all(), "goals": db.scalars(select(Goal).where(Goal.user_id == user.id)).all(), "recurring_bills": db.scalars(select(RecurringBill).where(RecurringBill.user_id == user.id)).all()}
+    def clean(record: object) -> dict[str, object]:
+        return {column.name: getattr(record, column.name) for column in record.__table__.columns}  # type: ignore[attr-defined]
+    return {"exported_at": datetime.now(timezone.utc).isoformat(), "user": {"id": user.id, "email": user.email, "display_name": user.display_name}, **{name: [clean(item) for item in items] for name, items in records.items()}}
 
 
 @app.post("/api/auth/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
