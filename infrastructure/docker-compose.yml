@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: moneyflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: moneyflow
+      POSTGRES_PASSWORD: moneyflow
+      POSTGRES_DB: moneyflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - moneyflow-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  moneyflow-postgres-data:

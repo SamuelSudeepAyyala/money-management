@@ -22,3 +22,17 @@ Every push to `main` deploys the static frontend to GitHub Pages. The preview UR
 `https://samuelsudeepayyala.github.io/money-management/`
 
 This preview uses demo data. Do not enter real financial information until the backend and authentication are implemented.
+
+## Backend development
+
+```bash
+docker compose -f infrastructure/docker-compose.yml up -d postgres
+cd backend
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload --port 8000
+```
+
+The API health check is available at `http://localhost:8000/health` and interactive API documentation at `http://localhost:8000/docs`.
