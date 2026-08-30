@@ -1,6 +1,9 @@
 export type ApiUser = { id: number; email: string; display_name: string };
 export type ApiAccount = { id: number; name: string; account_type: string; currency: string; opening_balance: number };
 export type ApiTransaction = { id: number; account_id: number; transaction_type: "expense" | "income"; amount: number; name: string; category: string; notes?: string; occurred_on: string };
+export type ApiBudget = { id: number; category: string; monthly_limit: number };
+export type ApiLoan = { id: number; name: string; remaining_balance: number; minimum_payment: number; interest_rate: number; due_date?: string };
+export type ApiGoal = { id: number; name: string; target_amount: number; current_amount: number; target_date?: string };
 
 export const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
@@ -26,4 +29,13 @@ export const financeApi = {
   transactions: () => request<ApiTransaction[]>("/api/transactions"),
   createTransaction: (transaction: Omit<ApiTransaction, "id">) => request<ApiTransaction>("/api/transactions", { method: "POST", body: JSON.stringify(transaction) }),
   deleteTransaction: (id: string) => request<void>(`/api/transactions/${id}`, { method: "DELETE" })
+  ,budgets: () => request<ApiBudget[]>("/api/budgets"),
+  createBudget: (budget: Omit<ApiBudget, "id">) => request<ApiBudget>("/api/budgets", { method: "POST", body: JSON.stringify(budget) }),
+  deleteBudget: (id: string) => request<void>(`/api/budgets/${id}`, { method: "DELETE" }),
+  loans: () => request<ApiLoan[]>("/api/loans"),
+  createLoan: (loan: Omit<ApiLoan, "id">) => request<ApiLoan>("/api/loans", { method: "POST", body: JSON.stringify(loan) }),
+  deleteLoan: (id: string) => request<void>(`/api/loans/${id}`, { method: "DELETE" }),
+  goals: () => request<ApiGoal[]>("/api/goals"),
+  createGoal: (goal: Omit<ApiGoal, "id">) => request<ApiGoal>("/api/goals", { method: "POST", body: JSON.stringify(goal) }),
+  deleteGoal: (id: string) => request<void>(`/api/goals/${id}`, { method: "DELETE" })
 };

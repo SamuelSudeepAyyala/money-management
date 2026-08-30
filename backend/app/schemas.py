@@ -53,3 +53,38 @@ class TransactionCreate(BaseModel):
 class TransactionResponse(TransactionCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class BudgetCreate(BaseModel):
+    category: str = Field(min_length=1, max_length=80)
+    monthly_limit: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+
+
+class BudgetResponse(BudgetCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+
+
+class LoanCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=160)
+    remaining_balance: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    minimum_payment: Decimal = Field(default=Decimal("0.00"), ge=0, max_digits=14, decimal_places=2)
+    interest_rate: Decimal = Field(default=Decimal("0.000"), ge=0, max_digits=6, decimal_places=3)
+    due_date: date | None = None
+
+
+class LoanResponse(LoanCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+
+
+class GoalCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=160)
+    target_amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+    current_amount: Decimal = Field(default=Decimal("0.00"), ge=0, max_digits=14, decimal_places=2)
+    target_date: date | None = None
+
+
+class GoalResponse(GoalCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int

@@ -8,11 +8,17 @@ from sqlalchemy.orm import Session
 from .config import settings
 from .db import Base, engine, get_db
 from .dependencies import current_user
-from .models import Account, Transaction, User
+from .models import Account, Budget, Goal, Loan, Transaction, User
 from .schemas import (
     AccountCreate,
     AccountResponse,
+    BudgetCreate,
+    BudgetResponse,
+    GoalCreate,
+    GoalResponse,
     LoginRequest,
+    LoanCreate,
+    LoanResponse,
     RegisterRequest,
     TokenResponse,
     TransactionCreate,
@@ -111,4 +117,73 @@ def delete_transaction(transaction_id: int, user: User = Depends(current_user), 
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
     db.delete(transaction)
+    db.commit()
+
+
+@app.get("/api/budgets", response_model=list[BudgetResponse])
+def list_budgets(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Budget]:
+    return list(db.scalars(select(Budget).where(Budget.user_id == user.id).order_by(Budget.id)).all())
+
+
+@app.post("/api/budgets", response_model=BudgetResponse, status_code=status.HTTP_201_CREATED)
+def create_budget(payload: BudgetCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Budget:
+    budget = Budget(user_id=user.id, **payload.model_dump())
+    db.add(budget)
+    db.commit()
+    db.refresh(budget)
+    return budget
+
+
+@app.delete("/api/budgets/{budget_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_budget(budget_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    budget = db.scalar(select(Budget).where(Budget.id == budget_id, Budget.user_id == user.id))
+    if not budget:
+        raise HTTPException(status_code=404, detail="Budget not found")
+    db.delete(budget)
+    db.commit()
+
+
+@app.get("/api/loans", response_model=list[LoanResponse])
+def list_loans(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Loan]:
+    return list(db.scalars(select(Loan).where(Loan.user_id == user.id).order_by(Loan.id)).all())
+
+
+@app.post("/api/loans", response_model=LoanResponse, status_code=status.HTTP_201_CREATED)
+def create_loan(payload: LoanCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Loan:
+    loan = Loan(user_id=user.id, **payload.model_dump())
+    db.add(loan)
+    db.commit()
+    db.refresh(loan)
+    return loan
+
+
+@app.delete("/api/loans/{loan_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_loan(loan_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    loan = db.scalar(select(Loan).where(Loan.id == loan_id, Loan.user_id == user.id))
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    db.delete(loan)
+    db.commit()
+
+
+@app.get("/api/goals", response_model=list[GoalResponse])
+def list_goals(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Goal]:
+    return list(db.scalars(select(Goal).where(Goal.user_id == user.id).order_by(Goal.id)).all())
+
+
+@app.post("/api/goals", response_model=GoalResponse, status_code=status.HTTP_201_CREATED)
+def create_goal(payload: GoalCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Goal:
+    goal = Goal(user_id=user.id, **payload.model_dump())
+    db.add(goal)
+    db.commit()
+    db.refresh(goal)
+    return goal
+
+
+@app.delete("/api/goals/{goal_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_goal(goal_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    goal = db.scalar(select(Goal).where(Goal.id == goal_id, Goal.user_id == user.id))
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    db.delete(goal)
     db.commit()

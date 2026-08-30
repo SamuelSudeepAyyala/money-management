@@ -39,6 +39,21 @@ def test_register_login_and_private_records() -> None:
     friend_token = second.json()["access_token"]
     assert client.get("/api/transactions", headers={"Authorization": f"Bearer {friend_token}"}).json() == []
 
+    budget = client.post("/api/budgets", headers=headers, json={"category": "Food", "monthly_limit": "400.00"})
+    loan = client.post("/api/loans", headers=headers, json={"name": "Student loan", "remaining_balance": "15000.00", "minimum_payment": "223.67", "interest_rate": "11.740", "due_date": "2026-09-11"})
+    goal = client.post("/api/goals", headers=headers, json={"name": "Emergency fund", "target_amount": "5000.00", "current_amount": "500.00"})
+    assert budget.status_code == 201 and loan.status_code == 201 and goal.status_code == 201
+    assert len(client.get("/api/budgets", headers=headers).json()) == 1
+    assert len(client.get("/api/loans", headers=headers).json()) == 1
+    assert len(client.get("/api/goals", headers=headers).json()) == 1
+    friend_headers = {"Authorization": f"Bearer {friend_token}"}
+    assert client.get("/api/budgets", headers=friend_headers).json() == []
+    assert client.get("/api/loans", headers=friend_headers).json() == []
+    assert client.get("/api/goals", headers=friend_headers).json() == []
+    assert client.delete(f"/api/budgets/{budget.json()['id']}", headers=headers).status_code == 204
+    assert client.delete(f"/api/loans/{loan.json()['id']}", headers=headers).status_code == 204
+    assert client.delete(f"/api/goals/{goal.json()['id']}", headers=headers).status_code == 204
+
 
 def test_bad_password_is_rejected() -> None:
     response = client.post("/api/auth/login", json={"email": "sam@example.com", "password": "wrong-password"})
