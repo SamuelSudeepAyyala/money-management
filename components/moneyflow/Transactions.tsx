@@ -1,0 +1,7 @@
+import { currency } from "./format";
+import { Transaction } from "./types";
+
+export function Transactions({ transactions, compact = false, remove, exportCsv, onViewAll }: { transactions: Transaction[]; compact?: boolean; remove?: (id: string) => void; exportCsv?: () => void; onViewAll?: () => void }) {
+  return <section className="panel transactions-panel"><div className="panel-heading"><div><h2>{compact ? "Recent transactions" : "All transactions"}</h2><p>{compact ? "Your latest money activity" : `${transactions.length} transactions in demo mode`}</p></div>{compact ? <button className="text-button" onClick={onViewAll}>View all →</button> : <button className="text-button" onClick={exportCsv}>Export CSV ↓</button>}</div><div className="transaction-list">{transactions.length ? transactions.map(transaction => <div className="transaction" key={transaction.id}><div className={`transaction-icon ${transaction.type}`}>{transaction.type === "income" ? "↗" : transaction.category === "Housing" ? "⌂" : "✣"}</div><div className="transaction-main"><strong>{transaction.name}</strong><small>{transaction.category} · {transaction.account} · {transaction.date}</small></div><strong className={transaction.type === "income" ? "amount income" : "amount"}>{transaction.type === "income" ? "+" : "−"}{currency(transaction.amount)} {remove && <button className="delete-link" onClick={() => remove(transaction.id)} aria-label={`Remove ${transaction.name}`}>×</button>}</strong></div>) : <div className="empty-state">No transactions yet. Add your first one.</div>}</div></section>;
+}
+
