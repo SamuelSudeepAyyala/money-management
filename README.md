@@ -4,7 +4,7 @@ Mobile-first personal finance management application.
 
 ## Current milestone
 
-Phase 1 frontend foundation: a responsive dashboard, installable PWA metadata, quick transaction entry, spending overview, upcoming payments, and recent transactions. The current entries are intentionally local demo state; the next step is authentication and PostgreSQL persistence.
+Phase 1 frontend foundation plus a usable demo workspace: responsive dashboard navigation, quick transaction entry, persistent demo transactions and accounts, transaction removal, account creation, spending overview, upcoming payments, and starter views for budgets, loans, and goals. Demo records are intentionally stored only in the current browser until the authenticated backend is approved and connected.
 
 ## Run locally
 
@@ -21,7 +21,7 @@ Every push to `main` deploys the static frontend to GitHub Pages. The preview UR
 
 `https://samuelsudeepayyala.github.io/money-management/`
 
-This preview uses demo data. Do not enter real financial information until the backend and authentication are implemented.
+This preview uses demo data and browser-local storage. Do not enter real financial information; the backend/authentication integration is not connected to this public preview yet.
 
 ## Backend development
 
