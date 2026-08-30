@@ -1,4 +1,4 @@
-export type Tab = "Overview" | "Transactions" | "Accounts" | "Budgets" | "Loans" | "Goals";
+export type Tab = "Overview" | "Transactions" | "Accounts" | "Budgets" | "Loans" | "Goals" | "Recurring Bills";
 
 export type Transaction = {
   id: string;
@@ -12,4 +12,3 @@ export type Transaction = {
 };
 
 export type Account = { id: string; name: string; type: string; balance: number; currency: string };
-

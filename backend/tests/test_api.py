@@ -59,6 +59,11 @@ def test_register_login_and_private_records() -> None:
     assert client.delete(f"/api/budgets/{budget.json()['id']}", headers=headers).status_code == 204
     assert client.delete(f"/api/loans/{loan.json()['id']}", headers=headers).status_code == 204
     assert client.delete(f"/api/goals/{goal.json()['id']}", headers=headers).status_code == 204
+    bill = client.post("/api/recurring-bills", headers=headers, json={"name": "Rent", "amount": "1450.00", "category": "Housing", "frequency": "monthly", "next_due": "2026-09-15"})
+    assert bill.status_code == 201
+    assert len(client.get("/api/recurring-bills", headers=headers).json()) == 1
+    assert client.get("/api/recurring-bills", headers=friend_headers).json() == []
+    assert client.delete(f"/api/recurring-bills/{bill.json()['id']}", headers=headers).status_code == 204
 
 
 def test_bad_password_is_rejected() -> None:

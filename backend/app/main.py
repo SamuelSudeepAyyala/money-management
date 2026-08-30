@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .config import settings
 from .db import Base, engine, get_db
 from .dependencies import current_user
-from .models import Account, Budget, Goal, Loan, LoanPayment, Transaction, User
+from .models import Account, Budget, Goal, Loan, LoanPayment, RecurringBill, Transaction, User
 from .schemas import (
     AccountCreate,
     AccountResponse,
@@ -20,6 +20,8 @@ from .schemas import (
     LoanCreate,
     LoanPaymentCreate,
     LoanPaymentResponse,
+    RecurringBillCreate,
+    RecurringBillResponse,
     LoanResponse,
     RegisterRequest,
     TokenResponse,
@@ -234,4 +236,27 @@ def delete_goal(goal_id: int, user: User = Depends(current_user), db: Session = 
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
     db.delete(goal)
+    db.commit()
+
+
+@app.get("/api/recurring-bills", response_model=list[RecurringBillResponse])
+def list_recurring_bills(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[RecurringBill]:
+    return list(db.scalars(select(RecurringBill).where(RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)).order_by(RecurringBill.next_due, RecurringBill.id)).all())
+
+
+@app.post("/api/recurring-bills", response_model=RecurringBillResponse, status_code=status.HTTP_201_CREATED)
+def create_recurring_bill(payload: RecurringBillCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> RecurringBill:
+    bill = RecurringBill(user_id=user.id, **payload.model_dump())
+    db.add(bill)
+    db.commit()
+    db.refresh(bill)
+    return bill
+
+
+@app.delete("/api/recurring-bills/{bill_id}", status_code=status.HTTP_204_NO_CONTENT)
+def archive_recurring_bill(bill_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    bill = db.scalar(select(RecurringBill).where(RecurringBill.id == bill_id, RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)))
+    if not bill:
+        raise HTTPException(status_code=404, detail="Recurring bill not found")
+    bill.is_archived = True
     db.commit()

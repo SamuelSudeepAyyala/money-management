@@ -103,3 +103,16 @@ class GoalCreate(BaseModel):
 class GoalResponse(GoalCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class RecurringBillCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=160)
+    amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+    category: str = Field(default="Other", max_length=80)
+    frequency: str = Field(pattern="^(weekly|monthly|yearly)$")
+    next_due: date
+
+
+class RecurringBillResponse(RecurringBillCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
