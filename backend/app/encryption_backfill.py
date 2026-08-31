@@ -1,4 +1,5 @@
 from sqlalchemy import select, text
+from sqlalchemy.orm.attributes import flag_modified
 
 from .db import SessionLocal
 from .models import Account, Budget, Goal, Loan, LoanPayment, RecurringBill, Transaction, User
@@ -6,7 +7,7 @@ from .models import Account, Budget, Goal, Loan, LoanPayment, RecurringBill, Tra
 
 MODELS = (User, Account, Transaction, Budget, Loan, LoanPayment, Goal, RecurringBill)
 SKIP_COLUMNS = {"id", "email", "password_hash", "user_id", "account_id", "loan_id", "is_archived", "created_at"}
-MARKER = "sensitive-financial-data-v1"
+MARKER = "sensitive-financial-data-v2"
 
 
 def run_encryption_backfill() -> None:
@@ -22,5 +23,6 @@ def run_encryption_backfill() -> None:
                 for column in record.__table__.columns:
                     if column.name not in SKIP_COLUMNS:
                         setattr(record, column.name, getattr(record, column.name))
+                        flag_modified(record, column.name)
         db.execute(text("INSERT INTO public.moneyflow_system_state (key) VALUES (:key) ON CONFLICT (key) DO NOTHING"), {"key": MARKER})
         db.commit()
