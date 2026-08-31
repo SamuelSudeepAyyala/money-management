@@ -10,6 +10,7 @@ from .config import settings
 from .db import Base, engine, get_db
 from .dependencies import current_user
 from .encryption_backfill import run_encryption_backfill
+from .encryption import lookup_digest
 from .models import Account, Budget, Goal, Loan, LoanPayment, RecurringBill, Transaction, User
 from .schemas import (
     AccountCreate,
@@ -64,9 +65,9 @@ def export_finances(user: User = Depends(current_user), db: Session = Depends(ge
 @app.post("/api/auth/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: RegisterRequest, response: Response, db: Session = Depends(get_db)) -> TokenResponse:
     email = payload.email.lower()
-    if db.scalar(select(User).where(User.email == email)):
+    if db.scalar(select(User).where(User.email_lookup == lookup_digest(email))):
         raise HTTPException(status_code=409, detail="An account with this email already exists")
-    user = User(email=email, display_name=payload.display_name.strip(), password_hash=hash_password(payload.password))
+    user = User(email=email, email_lookup=lookup_digest(email), display_name=payload.display_name.strip(), password_hash=hash_password(payload.password))
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -77,7 +78,7 @@ def register(payload: RegisterRequest, response: Response, db: Session = Depends
 
 @app.post("/api/auth/login", response_model=TokenResponse)
 def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)) -> TokenResponse:
-    user = db.scalar(select(User).where(User.email == payload.email.lower()))
+    user = db.scalar(select(User).where(User.email_lookup == lookup_digest(payload.email)))
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     token = create_access_token(user.id)
@@ -257,20 +258,3 @@ def list_recurring_bills(user: User = Depends(current_user), db: Session = Depen
     records = list(db.scalars(select(RecurringBill).where(RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)).order_by(RecurringBill.id)).all())
     return sorted(records, key=lambda item: (item.next_due, item.id))
 
-
-@app.post("/api/recurring-bills", response_model=RecurringBillResponse, status_code=status.HTTP_201_CREATED)
-def create_recurring_bill(payload: RecurringBillCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> RecurringBill:
-    bill = RecurringBill(user_id=user.id, **payload.model_dump())
-    db.add(bill)
-    db.commit()
-    db.refresh(bill)
-    return bill
-
-
-@app.delete("/api/recurring-bills/{bill_id}", status_code=status.HTTP_204_NO_CONTENT)
-def archive_recurring_bill(bill_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
-    bill = db.scalar(select(RecurringBill).where(RecurringBill.id == bill_id, RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)))
-    if not bill:
-        raise HTTPException(status_code=404, detail="Recurring bill not found")
-    bill.is_archived = True
-    db.commit()
