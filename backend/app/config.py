@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,7 +9,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     seed_demo_data: bool = False
     cors_origins: str = "http://localhost:3000"
-    encryption_key: str = ""
+    encryption_key: str = Field(default="", validation_alias="MONEYFLOW_ENCRYPTION_KEY")
 
     @property
     def allowed_origins(self) -> list[str]:
