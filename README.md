@@ -4,7 +4,7 @@ Mobile-first personal finance management application.
 
 ## Current milestone
 
-Phase 1 frontend foundation plus a usable demo workspace: responsive dashboard navigation, quick transaction entry, persistent demo transactions and accounts, transaction removal, account creation, spending overview, upcoming payments, and starter views for budgets, loans, and goals. Demo records are intentionally stored only in the current browser until the authenticated backend is approved and connected.
+Authenticated personal finance workspace with responsive navigation, transaction and account management, budgets, loans and payments, goals, recurring bills, per-user ownership, CSV transaction export, and full JSON backup export. The hosted application does not seed demo financial records.
 
 ## Run locally
 
@@ -21,11 +21,11 @@ Every push to `main` deploys the static frontend to GitHub Pages. The preview UR
 
 `https://samuelsudeepayyala.github.io/money-management/`
 
-This preview uses demo data and browser-local storage. Do not enter real financial information; the backend/authentication integration is not connected to this public preview yet.
+The hosted preview uses the authenticated backend. Do not use browser-local demo storage or assume visible sample values represent your finances.
 
 When the backend is deployed, set `NEXT_PUBLIC_API_URL` before building the frontend. The app will then use the backend session flow and display the username/password screen instead of anonymous demo mode. Never commit that value if it contains a private URL or any secret; the API URL itself is normally public, while database and JWT secrets belong only in backend hosting configuration.
 
-With the API URL configured, authenticated accounts and transactions are loaded from the backend. Budget, loan, and goal records remain browser-local until their database models are added.
+With the API URL configured, all supported finance records are loaded from the authenticated backend and scoped to the signed-in user. Use the download action in the top bar for a manual JSON backup.
 
 ## Backend development
 
