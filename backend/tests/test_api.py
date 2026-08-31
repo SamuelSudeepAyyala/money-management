@@ -8,6 +8,7 @@ os.environ["DATABASE_URL"] = "sqlite:///./test_moneyflow.db"
 os.environ["JWT_SECRET"] = "test-secret-that-is-long-enough"
 
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 
 from app.db import Base, engine
 from app.main import app
@@ -28,9 +29,17 @@ def test_register_login_and_private_records() -> None:
     account = client.post("/api/accounts", headers=headers, json={"name": "Checking", "account_type": "checking", "currency": "USD", "opening_balance": "100.00"})
     assert account.status_code == 201
     account_id = account.json()["id"]
+    with engine.connect() as connection:
+        raw_account = connection.execute(text("SELECT name, opening_balance FROM accounts WHERE id = :id"), {"id": account_id}).one()
+        assert raw_account.name.startswith("v1:")
+        assert raw_account.opening_balance.startswith("v1:")
     transaction = client.post("/api/transactions", headers=headers, json={"account_id": account_id, "transaction_type": "expense", "amount": "12.50", "name": "Coffee", "category": "Food"})
     assert transaction.status_code == 201
     assert len(client.get("/api/transactions", headers=headers).json()) == 1
+    with engine.connect() as connection:
+        raw_transaction = connection.execute(text("SELECT amount, name FROM transactions WHERE account_id = :id"), {"id": account_id}).one()
+        assert raw_transaction.amount.startswith("v1:")
+        assert raw_transaction.name.startswith("v1:")
     assert client.get("/api/me").json()["email"] == "sam@example.com"
     assert client.delete(f"/api/transactions/{transaction.json()['id']}", headers=headers).status_code == 204
     assert client.get("/api/transactions", headers=headers).json() == []

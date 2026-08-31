@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     seed_demo_data: bool = False
     cors_origins: str = "http://localhost:3000"
+    encryption_key: str = ""
 
     @property
     def allowed_origins(self) -> list[str]:

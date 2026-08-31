@@ -118,7 +118,8 @@ def archive_account(account_id: int, user: User = Depends(current_user), db: Ses
 
 @app.get("/api/transactions", response_model=list[TransactionResponse])
 def list_transactions(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Transaction]:
-    return list(db.scalars(select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.occurred_on.desc(), Transaction.id.desc())).all())
+    records = list(db.scalars(select(Transaction).where(Transaction.user_id == user.id).order_by(Transaction.id.desc())).all())
+    return sorted(records, key=lambda item: (item.occurred_on, item.id), reverse=True)
 
 
 @app.post("/api/transactions", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
@@ -193,7 +194,8 @@ def list_loan_payments(loan_id: int, user: User = Depends(current_user), db: Ses
     loan = db.scalar(select(Loan).where(Loan.id == loan_id, Loan.user_id == user.id))
     if not loan:
         raise HTTPException(status_code=404, detail="Loan not found")
-    return list(db.scalars(select(LoanPayment).where(LoanPayment.loan_id == loan_id, LoanPayment.user_id == user.id).order_by(LoanPayment.paid_on.desc(), LoanPayment.id.desc())).all())
+    records = list(db.scalars(select(LoanPayment).where(LoanPayment.loan_id == loan_id, LoanPayment.user_id == user.id).order_by(LoanPayment.id.desc())).all())
+    return sorted(records, key=lambda item: (item.paid_on, item.id), reverse=True)
 
 
 @app.post("/api/loans/{loan_id}/payments", response_model=LoanPaymentResponse, status_code=status.HTTP_201_CREATED)
@@ -250,7 +252,8 @@ def delete_goal(goal_id: int, user: User = Depends(current_user), db: Session = 
 
 @app.get("/api/recurring-bills", response_model=list[RecurringBillResponse])
 def list_recurring_bills(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[RecurringBill]:
-    return list(db.scalars(select(RecurringBill).where(RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)).order_by(RecurringBill.next_due, RecurringBill.id)).all())
+    records = list(db.scalars(select(RecurringBill).where(RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)).order_by(RecurringBill.id)).all())
+    return sorted(records, key=lambda item: (item.next_due, item.id))
 
 
 @app.post("/api/recurring-bills", response_model=RecurringBillResponse, status_code=status.HTTP_201_CREATED)
