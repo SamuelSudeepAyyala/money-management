@@ -7,8 +7,8 @@ from .models import Account, Budget, Goal, Loan, LoanPayment, RecurringBill, Tra
 
 
 MODELS = (User, Account, Transaction, Budget, Loan, LoanPayment, Goal, RecurringBill)
-SKIP_COLUMNS = {"id", "email", "email_lookup", "password_hash", "user_id", "account_id", "loan_id", "is_archived", "created_at"}
-MARKER = "sensitive-financial-data-v3"
+SKIP_COLUMNS = {"id", "email_lookup", "password_hash", "user_id", "account_id", "loan_id", "is_archived", "created_at"}
+MARKER = "sensitive-financial-data-v4"
 
 
 def run_encryption_backfill() -> None:
