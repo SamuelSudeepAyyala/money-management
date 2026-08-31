@@ -36,3 +36,9 @@ BEGIN
     EXECUTE format('ALTER TABLE public.%I ALTER COLUMN %I TYPE text USING %I::text', item.table_name, item.column_name, item.column_name);
   END LOOP;
 END $$;
+
+CREATE TABLE IF NOT EXISTS public.moneyflow_system_state (
+  key text PRIMARY KEY,
+  completed_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.moneyflow_system_state ENABLE ROW LEVEL SECURITY;

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from .config import settings
 from .db import Base, engine, get_db
 from .dependencies import current_user
+from .encryption_backfill import run_encryption_backfill
 from .models import Account, Budget, Goal, Loan, LoanPayment, RecurringBill, Transaction, User
 from .schemas import (
     AccountCreate,
@@ -44,6 +45,7 @@ def attach_auth_cookie(response: Response, token: str) -> None:
 @app.on_event("startup")
 def create_tables() -> None:
     Base.metadata.create_all(bind=engine)
+    run_encryption_backfill()
 
 
 @app.get("/health")
