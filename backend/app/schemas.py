@@ -1,7 +1,11 @@
 from datetime import date
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+
+
+EXPENSE_CATEGORIES = {"Housing", "Food & groceries", "Dining out", "Transportation", "Shopping", "Subscriptions", "Utilities", "Healthcare", "Education", "Personal care", "Gifts & donations", "Entertainment", "Other"}
+INCOME_CATEGORIES = {"Salary", "Freelance", "Business income", "Interest", "Dividends", "Refund", "Gift", "Government benefit", "Other income"}
 
 
 class RegisterRequest(BaseModel):
@@ -49,6 +53,13 @@ class TransactionCreate(BaseModel):
     category: str = Field(default="Other", max_length=80)
     notes: str | None = Field(default=None, max_length=2000)
     occurred_on: date = date.today()
+
+    @model_validator(mode="after")
+    def validate_category_for_type(self) -> "TransactionCreate":
+        allowed = INCOME_CATEGORIES if self.transaction_type == "income" else EXPENSE_CATEGORIES
+        if self.category not in allowed:
+            raise ValueError(f"Choose a valid category for this {self.transaction_type}")
+        return self
 
 
 class TransactionResponse(TransactionCreate):
