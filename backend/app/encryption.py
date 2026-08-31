@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import hmac
 import json
 from datetime import date
 from decimal import Decimal
@@ -36,6 +37,11 @@ def encrypt(value: Any) -> str:
     nonce = os.urandom(12)
     ciphertext = AESGCM(_key()).encrypt(nonce, payload, None)
     return PREFIX + base64.urlsafe_b64encode(nonce + ciphertext).decode()
+
+
+def lookup_digest(value: str) -> str:
+    """Create a deterministic keyed lookup value without storing the email."""
+    return hmac.new(_key(), value.strip().lower().encode(), hashlib.sha256).hexdigest()
 
 
 def decrypt(raw: str | None) -> Any:
