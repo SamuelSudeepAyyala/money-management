@@ -33,7 +33,7 @@ jobs:
         run: npm run lint
 
       - name: Check whitespace errors
-        run: git diff --check
+        run: git diff --check HEAD^ HEAD
 
       - name: Build static export
         run: npm run build
