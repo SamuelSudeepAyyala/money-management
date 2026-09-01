@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterTransactions, monthKey, shiftMonth } from "./reporting";
+import { expenseCategoryTotals, filterTransactions, monthKey, shiftMonth } from "./reporting";
 
 const transactions = [
   { id: "1", name: "Salary", category: "Salary", date: "2026-08-31", amount: 2000, type: "income" as const, account: "Checking" },
@@ -17,5 +17,10 @@ describe("reporting helpers", () => {
   it("combines month, account, type, and category filters", () => {
     expect(filterTransactions(transactions, { month: "2026-09", account: "Checking", type: "expense", category: "Housing" }).map(item => item.id)).toEqual(["2"]);
     expect(filterTransactions(transactions, { month: "2027-01" })).toEqual([]);
+  });
+
+  it("keeps unknown expense categories in Other and handles zero totals", () => {
+    expect(expenseCategoryTotals(transactions, ["Housing", "Food & groceries", "Subscriptions", "Other"])).toEqual([900, 0, 0, 5]);
+    expect(expenseCategoryTotals([], ["Housing", "Food & groceries", "Subscriptions", "Other"])).toEqual([0, 0, 0, 0]);
   });
 });
