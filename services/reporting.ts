@@ -13,3 +13,8 @@ export function shiftMonth(month: string, offset: number): string {
 export function filterTransactions(transactions: Transaction[], filters: { month?: string; account?: string; type?: Transaction["type"] | "all"; category?: string }): Transaction[] {
   return transactions.filter(transaction => (!filters.month || monthKey(transaction.date) === filters.month) && (!filters.account || transaction.account === filters.account) && (!filters.type || filters.type === "all" || transaction.type === filters.type) && (!filters.category || transaction.category === filters.category));
 }
+
+export function expenseCategoryTotals(transactions: Transaction[], categories: string[]): number[] {
+  const namedCategories = categories.slice(0, -1);
+  return categories.map(category => transactions.filter(transaction => transaction.type === "expense" && (category === "Other" ? !namedCategories.includes(transaction.category) : transaction.category === category)).reduce((sum, transaction) => sum + transaction.amount, 0));
+}
