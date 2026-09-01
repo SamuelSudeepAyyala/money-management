@@ -127,3 +127,8 @@ class RecurringBillCreate(BaseModel):
 class RecurringBillResponse(RecurringBillCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class RecurringBillPaymentCreate(BaseModel):
+    account_id: int
+    occurred_on: date = date.today()

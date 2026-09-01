@@ -75,6 +75,9 @@ def test_register_login_and_private_records() -> None:
     assert bill.status_code == 201
     assert len(client.get("/api/recurring-bills", headers=headers).json()) == 1
     assert client.get("/api/recurring-bills", headers=friend_headers).json() == []
+    paid = client.post(f"/api/recurring-bills/{bill.json()['id']}/pay", headers=headers, json={"account_id": account_id, "occurred_on": "2026-09-15"})
+    assert paid.status_code == 200 and paid.json()["next_due"] == "2026-10-15"
+    assert client.get("/api/transactions", headers=headers).json()[0]["name"] == "Rent"
     assert client.put(f"/api/recurring-bills/{bill.json()['id']}", headers=headers, json={"name": "Updated rent", "amount": "1500.00", "category": "Housing", "frequency": "monthly", "next_due": "2026-09-16"}).status_code == 200
     assert client.delete(f"/api/recurring-bills/{bill.json()['id']}", headers=headers).status_code == 204
 

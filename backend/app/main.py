@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+from calendar import monthrange
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from fastapi import Depends, FastAPI, HTTPException, Response, status
@@ -24,6 +25,7 @@ from .schemas import (
     LoanPaymentCreate,
     LoanPaymentResponse,
     RecurringBillCreate,
+    RecurringBillPaymentCreate,
     RecurringBillResponse,
     LoanResponse,
     RegisterRequest,
@@ -326,6 +328,33 @@ def update_recurring_bill(bill_id: int, payload: RecurringBillCreate, user: User
         raise HTTPException(status_code=404, detail="Recurring bill not found")
     for field, value in payload.model_dump().items():
         setattr(bill, field, value)
+    db.commit()
+    db.refresh(bill)
+    return bill
+
+
+@app.post("/api/recurring-bills/{bill_id}/pay", response_model=RecurringBillResponse)
+def pay_recurring_bill(bill_id: int, payload: RecurringBillPaymentCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> RecurringBill:
+    bill = db.scalar(select(RecurringBill).where(RecurringBill.id == bill_id, RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)))
+    account = db.scalar(select(Account).where(Account.id == payload.account_id, Account.user_id == user.id, Account.is_archived.is_(False)))
+    if not bill:
+        raise HTTPException(status_code=404, detail="Recurring bill not found")
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    transaction = Transaction(user_id=user.id, account_id=account.id, transaction_type="expense", amount=bill.amount, name=bill.name, category=bill.category, occurred_on=payload.occurred_on, notes="Recurring bill payment")
+    next_due = bill.next_due
+    while next_due <= payload.occurred_on:
+        if bill.frequency == "weekly":
+            next_due = next_due.fromordinal(next_due.toordinal() + 7)
+        elif bill.frequency == "yearly":
+            next_year = next_due.year + 1
+            next_due = date(next_year, next_due.month, min(next_due.day, monthrange(next_year, next_due.month)[1]))
+        else:
+            next_month = next_due.month % 12 + 1
+            next_year = next_due.year + (1 if next_due.month == 12 else 0)
+            next_due = date(next_year, next_month, min(next_due.day, monthrange(next_year, next_month)[1]))
+    bill.next_due = next_due
+    db.add(transaction)
     db.commit()
     db.refresh(bill)
     return bill
