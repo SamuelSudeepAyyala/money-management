@@ -28,3 +28,11 @@
 .due-bill-actions{display:flex;gap:10px}
 .secondary-button{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);padding:12px 17px;font:700 12px 'DM Sans';cursor:pointer}
 .secondary-button:hover{background:var(--bg)}
+.month-picker{display:flex;align-items:center;gap:9px;color:var(--ink);font-size:11px;font-weight:700}
+.month-arrow{border:1px solid var(--line);background:#fff;color:var(--blue);border-radius:7px;width:28px;height:28px;font-size:18px;line-height:1;cursor:pointer}
+.month-arrow:hover{background:#eef0ff}
+.transaction-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:10px;align-items:end;margin-top:18px;padding:13px;background:var(--bg);border:1px solid var(--line);border-radius:9px}
+.transaction-filters label{font-size:10px;font-weight:700;color:#65708a}
+.transaction-filters input,.transaction-filters select{display:block;width:100%;margin-top:6px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:9px;font:12px 'DM Sans'}
+.filter-reset{border:0;background:transparent;color:var(--blue);font:700 11px 'DM Sans';padding:10px 3px;cursor:pointer}
+@media(max-width:700px){.transaction-filters{grid-template-columns:1fr 1fr}.filter-reset{justify-self:start}.month-picker{gap:5px;font-size:10px}}
