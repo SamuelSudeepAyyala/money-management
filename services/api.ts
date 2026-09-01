@@ -37,6 +37,7 @@ export const financeApi = {
   transactions: () => request<ApiTransaction[]>("/api/transactions"),
   createTransaction: (transaction: Omit<ApiTransaction, "id">) => request<ApiTransaction>("/api/transactions", { method: "POST", body: JSON.stringify(transaction) }),
   deleteTransaction: (id: string) => request<void>(`/api/transactions/${id}`, { method: "DELETE" })
+  ,updateTransaction: (id: string, transaction: Omit<ApiTransaction, "id">) => request<ApiTransaction>(`/api/transactions/${id}`, { method: "PUT", body: JSON.stringify(transaction) })
   ,budgets: () => request<ApiBudget[]>("/api/budgets"),
   createBudget: (budget: Omit<ApiBudget, "id">) => request<ApiBudget>("/api/budgets", { method: "POST", body: JSON.stringify(budget) }),
   deleteBudget: (id: string) => request<void>(`/api/budgets/${id}`, { method: "DELETE" }),
