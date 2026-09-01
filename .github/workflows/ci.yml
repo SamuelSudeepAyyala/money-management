@@ -32,6 +32,9 @@ jobs:
       - name: Check TypeScript
         run: npm run lint
 
+      - name: Run edge-case tests
+        run: npm test
+
       - name: Check whitespace errors
         run: git diff --check HEAD^ HEAD
 
