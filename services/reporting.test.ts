@@ -17,6 +17,8 @@ describe("reporting helpers", () => {
   it("combines month, account, type, and category filters", () => {
     expect(filterTransactions(transactions, { month: "2026-09", account: "Checking", type: "expense", category: "Housing" }).map(item => item.id)).toEqual(["2"]);
     expect(filterTransactions(transactions, { month: "2027-01" })).toEqual([]);
+    expect(filterTransactions(transactions, { type: "income" }).map(item => item.id)).toEqual(["1"]);
+    expect(filterTransactions(transactions, { type: "expense" }).map(item => item.id)).toEqual(["2", "3"]);
   });
 
   it("keeps unknown expense categories in Other and handles zero totals", () => {

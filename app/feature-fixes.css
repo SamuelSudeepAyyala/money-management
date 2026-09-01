@@ -35,4 +35,10 @@
 .transaction-filters label{font-size:10px;font-weight:700;color:#65708a}
 .transaction-filters input,.transaction-filters select{display:block;width:100%;margin-top:6px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);padding:9px;font:12px 'DM Sans'}
 .filter-reset{border:0;background:transparent;color:var(--blue);font:700 11px 'DM Sans';padding:10px 3px;cursor:pointer}
+.transaction-views{display:flex;gap:6px;margin-top:18px;padding:4px;background:var(--bg);border:1px solid var(--line);border-radius:9px}
+.transaction-views button{flex:1;border:0;border-radius:7px;background:transparent;color:var(--muted);padding:10px 8px;font:700 11px 'DM Sans';cursor:pointer}
+.transaction-views button span{display:block;font-size:9px;font-weight:500;margin-top:3px}
+.transaction-views button.active{background:#fff;color:var(--ink);box-shadow:0 2px 7px #18203d10}
+.transaction-views button.income-tab.active{color:var(--green)}
+.transaction-views button.expense-tab.active{color:#d87979}
 @media(max-width:700px){.transaction-filters{grid-template-columns:1fr 1fr}.filter-reset{justify-self:start}.month-picker{gap:5px;font-size:10px}}
