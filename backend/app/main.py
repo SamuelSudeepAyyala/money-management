@@ -146,6 +146,21 @@ def delete_transaction(transaction_id: int, user: User = Depends(current_user), 
     db.commit()
 
 
+@app.put("/api/transactions/{transaction_id}", response_model=TransactionResponse)
+def update_transaction(transaction_id: int, payload: TransactionCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Transaction:
+    transaction = db.scalar(select(Transaction).where(Transaction.id == transaction_id, Transaction.user_id == user.id))
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    account = db.scalar(select(Account).where(Account.id == payload.account_id, Account.user_id == user.id, Account.is_archived.is_(False)))
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    for field, value in payload.model_dump().items():
+        setattr(transaction, field, value)
+    db.commit()
+    db.refresh(transaction)
+    return transaction
+
+
 @app.get("/api/budgets", response_model=list[BudgetResponse])
 def list_budgets(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Budget]:
     return list(db.scalars(select(Budget).where(Budget.user_id == user.id).order_by(Budget.id)).all())
@@ -258,3 +273,20 @@ def list_recurring_bills(user: User = Depends(current_user), db: Session = Depen
     records = list(db.scalars(select(RecurringBill).where(RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)).order_by(RecurringBill.id)).all())
     return sorted(records, key=lambda item: (item.next_due, item.id))
 
+
+@app.post("/api/recurring-bills", response_model=RecurringBillResponse, status_code=status.HTTP_201_CREATED)
+def create_recurring_bill(payload: RecurringBillCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> RecurringBill:
+    bill = RecurringBill(user_id=user.id, **payload.model_dump())
+    db.add(bill)
+    db.commit()
+    db.refresh(bill)
+    return bill
+
+
+@app.delete("/api/recurring-bills/{bill_id}", status_code=status.HTTP_204_NO_CONTENT)
+def archive_recurring_bill(bill_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    bill = db.scalar(select(RecurringBill).where(RecurringBill.id == bill_id, RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)))
+    if not bill:
+        raise HTTPException(status_code=404, detail="Recurring bill not found")
+    bill.is_archived = True
+    db.commit()
