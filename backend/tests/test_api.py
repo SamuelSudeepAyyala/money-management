@@ -59,6 +59,9 @@ def test_register_login_and_private_records() -> None:
     assert client.get("/api/budgets", headers=friend_headers).json() == []
     assert client.get("/api/loans", headers=friend_headers).json() == []
     assert client.get("/api/goals", headers=friend_headers).json() == []
+    assert client.put(f"/api/budgets/{budget.json()['id']}", headers=headers, json={"category": "Housing", "monthly_limit": "450.00"}).status_code == 200
+    assert client.put(f"/api/loans/{loan.json()['id']}", headers=headers, json={"name": "Updated student loan", "remaining_balance": "15000.00", "minimum_payment": "223.67", "interest_rate": "11.740", "due_date": "2026-09-12"}).status_code == 200
+    assert client.put(f"/api/goals/{goal.json()['id']}", headers=headers, json={"name": "Updated emergency fund", "target_amount": "6000.00", "current_amount": "500.00"}).status_code == 200
     loan_id = loan.json()["id"]
     payment = client.post(f"/api/loans/{loan_id}/payments", headers=headers, json={"amount": "223.67", "principal_amount": "180.00", "interest_amount": "43.67", "paid_on": "2026-09-11"})
     assert payment.status_code == 201
@@ -72,6 +75,7 @@ def test_register_login_and_private_records() -> None:
     assert bill.status_code == 201
     assert len(client.get("/api/recurring-bills", headers=headers).json()) == 1
     assert client.get("/api/recurring-bills", headers=friend_headers).json() == []
+    assert client.put(f"/api/recurring-bills/{bill.json()['id']}", headers=headers, json={"name": "Updated rent", "amount": "1500.00", "category": "Housing", "frequency": "monthly", "next_due": "2026-09-16"}).status_code == 200
     assert client.delete(f"/api/recurring-bills/{bill.json()['id']}", headers=headers).status_code == 204
 
 
