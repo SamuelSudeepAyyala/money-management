@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check TypeScript
+        run: npm run lint
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      - name: Build static export
+        run: npm run build
+        env:
+          GITHUB_PAGES: "true"
+          NEXT_PUBLIC_API_URL: https://moneyflow-api-8ati.onrender.com
