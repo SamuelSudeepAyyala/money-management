@@ -175,6 +175,18 @@ def create_budget(payload: BudgetCreate, user: User = Depends(current_user), db:
     return budget
 
 
+@app.put("/api/budgets/{budget_id}", response_model=BudgetResponse)
+def update_budget(budget_id: int, payload: BudgetCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Budget:
+    budget = db.scalar(select(Budget).where(Budget.id == budget_id, Budget.user_id == user.id))
+    if not budget:
+        raise HTTPException(status_code=404, detail="Budget not found")
+    budget.category = payload.category
+    budget.monthly_limit = payload.monthly_limit
+    db.commit()
+    db.refresh(budget)
+    return budget
+
+
 @app.delete("/api/budgets/{budget_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_budget(budget_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
     budget = db.scalar(select(Budget).where(Budget.id == budget_id, Budget.user_id == user.id))
@@ -193,6 +205,18 @@ def list_loans(user: User = Depends(current_user), db: Session = Depends(get_db)
 def create_loan(payload: LoanCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Loan:
     loan = Loan(user_id=user.id, **payload.model_dump())
     db.add(loan)
+    db.commit()
+    db.refresh(loan)
+    return loan
+
+
+@app.put("/api/loans/{loan_id}", response_model=LoanResponse)
+def update_loan(loan_id: int, payload: LoanCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Loan:
+    loan = db.scalar(select(Loan).where(Loan.id == loan_id, Loan.user_id == user.id))
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    for field, value in payload.model_dump().items():
+        setattr(loan, field, value)
     db.commit()
     db.refresh(loan)
     return loan
@@ -259,6 +283,18 @@ def create_goal(payload: GoalCreate, user: User = Depends(current_user), db: Ses
     return goal
 
 
+@app.put("/api/goals/{goal_id}", response_model=GoalResponse)
+def update_goal(goal_id: int, payload: GoalCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Goal:
+    goal = db.scalar(select(Goal).where(Goal.id == goal_id, Goal.user_id == user.id))
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    for field, value in payload.model_dump().items():
+        setattr(goal, field, value)
+    db.commit()
+    db.refresh(goal)
+    return goal
+
+
 @app.delete("/api/goals/{goal_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_goal(goal_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
     goal = db.scalar(select(Goal).where(Goal.id == goal_id, Goal.user_id == user.id))
@@ -278,6 +314,18 @@ def list_recurring_bills(user: User = Depends(current_user), db: Session = Depen
 def create_recurring_bill(payload: RecurringBillCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> RecurringBill:
     bill = RecurringBill(user_id=user.id, **payload.model_dump())
     db.add(bill)
+    db.commit()
+    db.refresh(bill)
+    return bill
+
+
+@app.put("/api/recurring-bills/{bill_id}", response_model=RecurringBillResponse)
+def update_recurring_bill(bill_id: int, payload: RecurringBillCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> RecurringBill:
+    bill = db.scalar(select(RecurringBill).where(RecurringBill.id == bill_id, RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)))
+    if not bill:
+        raise HTTPException(status_code=404, detail="Recurring bill not found")
+    for field, value in payload.model_dump().items():
+        setattr(bill, field, value)
     db.commit()
     db.refresh(bill)
     return bill
