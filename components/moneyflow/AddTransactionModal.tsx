@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { localDateString } from "../../services/localDate";
 import { CalendarInput } from "./CalendarInput";
 import { Account, Transaction } from "./types";
 
 export function AddTransactionModal({ accounts, onClose, onSubmit, initialTransaction }: { accounts: Account[]; onClose: () => void; onSubmit: (event: React.FormEvent<HTMLFormElement>) => void; initialTransaction?: Transaction }) {
   const [type, setType] = useState<"expense" | "income">(initialTransaction?.type || "expense");
+  useEffect(() => { const previousOverflow = document.body.style.overflow; document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = previousOverflow; }; }, []);
   const expenseCategories = ["Housing", "Food & groceries", "Dining out", "Transportation", "Shopping", "Subscriptions", "Utilities", "Healthcare", "Education", "Personal care", "Gifts & donations", "Entertainment", "Other"];
   const incomeCategories = ["Salary", "Freelance", "Business income", "Interest", "Dividends", "Refund", "Gift", "Government benefit", "Other income"];
   const [category, setCategory] = useState(initialTransaction?.category || expenseCategories[1]);
