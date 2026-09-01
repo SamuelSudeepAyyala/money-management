@@ -22,3 +22,9 @@
   text-align: left;
 }
 .record-actions{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
+.due-bill-modal{width:min(440px,100%)}
+.due-bill-copy{color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 20px}
+.due-bill-copy strong{color:var(--ink)}
+.due-bill-actions{display:flex;gap:10px}
+.secondary-button{border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);padding:12px 17px;font:700 12px 'DM Sans';cursor:pointer}
+.secondary-button:hover{background:var(--bg)}
