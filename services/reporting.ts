@@ -1,5 +1,33 @@
 import { Transaction } from "../components/moneyflow/types";
 
+export type MonthlyMarginStatus = "excellent" | "steady" | "tight" | "over" | "no-income";
+
+export type MonthlyMarginInsight = {
+  margin: number;
+  spendingRatio: number | null;
+  status: MonthlyMarginStatus;
+  message: string;
+};
+
+export function monthlyMarginInsight(income: number, spending: number): MonthlyMarginInsight {
+  const margin = income - spending;
+  if (income <= 0) {
+    return { margin, spendingRatio: null, status: "no-income", message: "Add income to see the breathing room your month created." };
+  }
+
+  const spendingRatio = spending / income;
+  if (spendingRatio < 0.5) {
+    return { margin, spendingRatio, status: "excellent", message: "Plenty of breathing room—your money is working with you." };
+  }
+  if (spendingRatio <= 0.8) {
+    return { margin, spendingRatio, status: "steady", message: "Nice balance—income stayed comfortably ahead of spending." };
+  }
+  if (spendingRatio <= 1) {
+    return { margin, spendingRatio, status: "tight", message: "A tight month—one small trim could create more room." };
+  }
+  return { margin, spendingRatio, status: "over", message: "Spending outran income—let’s find the biggest leak." };
+}
+
 export function monthKey(date: string): string {
   return date.slice(0, 7);
 }

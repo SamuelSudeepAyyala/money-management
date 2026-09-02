@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { expenseCategoryTotals, filterTransactions, monthKey, shiftMonth } from "./reporting";
+import { expenseCategoryTotals, filterTransactions, monthKey, monthlyMarginInsight, shiftMonth } from "./reporting";
 
 const transactions = [
   { id: "1", name: "Salary", category: "Salary", date: "2026-08-31", amount: 2000, type: "income" as const, account: "Checking" },
@@ -24,5 +24,21 @@ describe("reporting helpers", () => {
   it("keeps unknown expense categories in Other and handles zero totals", () => {
     expect(expenseCategoryTotals(transactions, ["Housing", "Food & groceries", "Subscriptions", "Other"])).toEqual([900, 0, 0, 5]);
     expect(expenseCategoryTotals([], ["Housing", "Food & groceries", "Subscriptions", "Other"])).toEqual([0, 0, 0, 0]);
+  });
+
+  it("calculates a positive monthly margin and an encouraging status", () => {
+    expect(monthlyMarginInsight(10, 6)).toEqual({
+      margin: 4,
+      spendingRatio: 0.6,
+      status: "steady",
+      message: "Nice balance—income stayed comfortably ahead of spending.",
+    });
+    expect(monthlyMarginInsight(100, 40).status).toBe("excellent");
+  });
+
+  it("describes tight, overspending, and no-income months", () => {
+    expect(monthlyMarginInsight(100, 90).status).toBe("tight");
+    expect(monthlyMarginInsight(100, 120)).toMatchObject({ margin: -20, status: "over", spendingRatio: 1.2 });
+    expect(monthlyMarginInsight(0, 50)).toMatchObject({ margin: -50, spendingRatio: null, status: "no-income" });
   });
 });

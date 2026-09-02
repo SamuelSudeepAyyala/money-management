@@ -41,4 +41,19 @@
 .transaction-views button.active{background:#fff;color:var(--ink);box-shadow:0 2px 7px #18203d10}
 .transaction-views button.income-tab.active{color:var(--green)}
 .transaction-views button.expense-tab.active{color:#d87979}
+.monthly-margin{display:grid;grid-template-columns:1.05fr 1.4fr .9fr;align-items:center;gap:24px;margin:18px 0;padding:22px 24px;border:1px solid #dfe4f2;border-radius:14px;background:linear-gradient(120deg,#f8f9ff,#fff);box-shadow:0 8px 24px #18203d08}
+.monthly-margin-copy .eyebrow{margin:0 0 8px;color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.14em}
+.monthly-margin h2{margin:0;color:var(--ink);font:700 20px 'DM Sans'}
+.monthly-margin-copy>p:last-child{margin:6px 0 0;color:var(--muted);font-size:12px}
+.monthly-margin-value{display:flex;align-items:center;gap:14px}
+.monthly-margin-value strong{color:var(--green);font:700 32px 'DM Sans';white-space:nowrap}
+.monthly-margin-value span{color:var(--muted);font-size:12px;line-height:1.45}
+.monthly-margin-breakdown{display:flex;flex-direction:column;gap:9px;color:var(--muted);font-size:11px;border-left:1px solid var(--line);padding-left:20px}
+.monthly-margin-breakdown strong{display:block;color:var(--ink);font-size:14px;margin-top:2px}
+.monthly-margin.tight{background:linear-gradient(120deg,#fffaf2,#fff)}
+.monthly-margin.tight .monthly-margin-value strong{color:#c8842a}
+.monthly-margin.over{background:linear-gradient(120deg,#fff6f6,#fff)}
+.monthly-margin.over .monthly-margin-value strong{color:#cf6565}
+.monthly-margin.no-income .monthly-margin-value strong{color:var(--muted)}
+@media(max-width:700px){.monthly-margin{grid-template-columns:1fr;gap:14px;padding:18px}.monthly-margin-value{align-items:flex-start;flex-direction:column;gap:5px}.monthly-margin-breakdown{border-left:0;border-top:1px solid var(--line);padding:12px 0 0;flex-direction:row;justify-content:space-between}}
 @media(max-width:700px){.transaction-filters{grid-template-columns:1fr 1fr}.filter-reset{justify-self:start}.month-picker{gap:5px;font-size:10px}}
