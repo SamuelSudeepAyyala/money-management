@@ -36,7 +36,7 @@ def test_register_login_and_private_records() -> None:
         raw_account = connection.execute(text("SELECT name, opening_balance FROM accounts WHERE id = :id"), {"id": account_id}).one()
         assert raw_account.name.startswith("v1:")
         assert raw_account.opening_balance.startswith("v1:")
-    transaction = client.post("/api/transactions", headers=headers, json={"account_id": account_id, "transaction_type": "expense", "amount": "12.50", "name": "Coffee", "category": "Food"})
+    transaction = client.post("/api/transactions", headers=headers, json={"account_id": account_id, "transaction_type": "expense", "amount": "12.50", "name": "Coffee", "category": "Food & groceries"})
     assert transaction.status_code == 201
     assert len(client.get("/api/transactions", headers=headers).json()) == 1
     with engine.connect() as connection:
