@@ -82,6 +82,9 @@ def test_register_login_and_private_records() -> None:
     assert paid.status_code == 200 and paid.json()["next_due"] == "2026-10-15"
     assert client.get("/api/transactions", headers=headers).json()[0]["name"] == "Rent"
     assert client.put(f"/api/recurring-bills/{bill.json()['id']}", headers=headers, json={"name": "Updated rent", "amount": "1500.00", "category": "Housing", "frequency": "monthly", "next_due": "2026-09-16"}).status_code == 200
+    skipped = client.post(f"/api/recurring-bills/{bill.json()['id']}/status", headers=headers, json={"status": "skipped", "occurrence_on": "2026-09-16", "next_due": "2026-09-17"})
+    assert skipped.status_code == 200 and skipped.json()["last_status"] == "skipped"
+    assert client.post(f"/api/recurring-bills/{bill.json()['id']}/status", headers=headers, json={"status": "postponed", "occurrence_on": "2026-09-16", "next_due": "2026-09-23"}).status_code == 409
     assert client.delete(f"/api/recurring-bills/{bill.json()['id']}", headers=headers).status_code == 204
 
 

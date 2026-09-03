@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
@@ -127,8 +128,16 @@ class RecurringBillCreate(BaseModel):
 class RecurringBillResponse(RecurringBillCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    last_status: str | None = None
+    last_occurrence: date | None = None
 
 
 class RecurringBillPaymentCreate(BaseModel):
     account_id: int
     occurred_on: date = date.today()
+
+
+class RecurringBillStatusCreate(BaseModel):
+    status: Literal["paid", "skipped", "postponed"]
+    occurrence_on: date
+    next_due: date

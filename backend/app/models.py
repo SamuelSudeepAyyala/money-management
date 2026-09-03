@@ -123,6 +123,8 @@ class RecurringBill(Base):
     category: Mapped[str] = mapped_column(EncryptedString(), default="Other")
     frequency: Mapped[str] = mapped_column(EncryptedString(), default="monthly")
     next_due: Mapped[date] = mapped_column(EncryptedDate())
+    last_status: Mapped[str | None] = mapped_column(EncryptedString(), nullable=True)
+    last_occurrence: Mapped[date | None] = mapped_column(EncryptedDate(), nullable=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     user: Mapped[User] = relationship(back_populates="recurring_bills")
