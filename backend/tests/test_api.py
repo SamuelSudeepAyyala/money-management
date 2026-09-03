@@ -39,6 +39,10 @@ def test_register_login_and_private_records() -> None:
     transaction = client.post("/api/transactions", headers=headers, json={"account_id": account_id, "transaction_type": "expense", "amount": "12.50", "name": "Coffee", "category": "Food & groceries"})
     assert transaction.status_code == 201
     assert len(client.get("/api/transactions", headers=headers).json()) == 1
+    edited_transaction = client.put(f"/api/transactions/{transaction.json()['id']}", headers=headers, json={"account_id": account_id, "transaction_type": "expense", "amount": "15.25", "name": "Updated coffee", "category": "Dining out", "notes": "Corrected amount", "occurred_on": "2026-09-02"})
+    assert edited_transaction.status_code == 200
+    assert edited_transaction.json()["name"] == "Updated coffee"
+    assert edited_transaction.json()["amount"] == "15.25"
     with engine.connect() as connection:
         raw_transaction = connection.execute(text("SELECT amount, name FROM transactions WHERE account_id = :id"), {"id": account_id}).one()
         assert raw_transaction.amount.startswith("v1:")
