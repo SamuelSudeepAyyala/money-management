@@ -4,7 +4,7 @@ export type ApiTransaction = { id: number; account_id: number; transaction_type:
 export type ApiBudget = { id: number; category: string; monthly_limit: number };
 export type ApiLoan = { id: number; name: string; remaining_balance: number; minimum_payment: number; interest_rate: number; due_date?: string };
 export type ApiLoanPayment = { id: number; loan_id: number; amount: number; principal_amount: number; interest_amount: number; paid_on: string; note?: string };
-export type ApiRecurringBill = { id: number; name: string; amount: number; category: string; frequency: "weekly" | "monthly" | "yearly"; next_due: string };
+export type ApiRecurringBill = { id: number; name: string; amount: number; category: string; frequency: "weekly" | "monthly" | "yearly"; next_due: string; last_status?: "paid" | "skipped" | "postponed"; last_occurrence?: string };
 export type FinanceExport = Record<string, unknown>;
 export type ApiGoal = { id: number; name: string; target_amount: number; current_amount: number; target_date?: string };
 
@@ -36,6 +36,7 @@ export const financeApi = {
   deleteRecurringBill: (id: string) => request<void>(`/api/recurring-bills/${id}`, { method: "DELETE" }),
   updateRecurringBill: (id: string, bill: Omit<ApiRecurringBill, "id">) => request<ApiRecurringBill>(`/api/recurring-bills/${id}`, { method: "PUT", body: JSON.stringify(bill) }),
   payRecurringBill: (id: string, account_id: number, occurred_on: string) => request<ApiRecurringBill>(`/api/recurring-bills/${id}/pay`, { method: "POST", body: JSON.stringify({ account_id, occurred_on }) }),
+  updateRecurringBillStatus: (id: string, status: "paid" | "skipped" | "postponed", occurrence_on: string, next_due: string) => request<ApiRecurringBill>(`/api/recurring-bills/${id}/status`, { method: "POST", body: JSON.stringify({ status, occurrence_on, next_due }) }),
   exportFinances: () => request<FinanceExport>("/api/export"),
   transactions: () => request<ApiTransaction[]>("/api/transactions"),
   createTransaction: (transaction: Omit<ApiTransaction, "id">) => request<ApiTransaction>("/api/transactions", { method: "POST", body: JSON.stringify(transaction) }),

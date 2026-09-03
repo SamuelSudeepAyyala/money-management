@@ -27,6 +27,7 @@ from .schemas import (
     RecurringBillCreate,
     RecurringBillPaymentCreate,
     RecurringBillResponse,
+    RecurringBillStatusCreate,
     LoanResponse,
     RegisterRequest,
     TokenResponse,
@@ -366,7 +367,24 @@ def pay_recurring_bill(bill_id: int, payload: RecurringBillPaymentCreate, user: 
             next_year = next_due.year + (1 if next_due.month == 12 else 0)
             next_due = date(next_year, next_month, min(next_due.day, monthrange(next_year, next_month)[1]))
     bill.next_due = next_due
+    bill.last_status = "paid"
+    bill.last_occurrence = payload.occurred_on
     db.add(transaction)
+    db.commit()
+    db.refresh(bill)
+    return bill
+
+
+@app.post("/api/recurring-bills/{bill_id}/status", response_model=RecurringBillResponse)
+def update_recurring_bill_status(bill_id: int, payload: RecurringBillStatusCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> RecurringBill:
+    bill = db.scalar(select(RecurringBill).where(RecurringBill.id == bill_id, RecurringBill.user_id == user.id, RecurringBill.is_archived.is_(False)))
+    if not bill:
+        raise HTTPException(status_code=404, detail="Recurring bill not found")
+    if bill.last_occurrence == payload.occurrence_on:
+        raise HTTPException(status_code=409, detail="This bill occurrence already has a status")
+    bill.last_status = payload.status
+    bill.last_occurrence = payload.occurrence_on
+    bill.next_due = payload.next_due
     db.commit()
     db.refresh(bill)
     return bill
