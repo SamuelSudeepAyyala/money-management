@@ -112,6 +112,18 @@ def create_account(payload: AccountCreate, user: User = Depends(current_user), d
     return account
 
 
+@app.put("/api/accounts/{account_id}", response_model=AccountResponse)
+def update_account(account_id: int, payload: AccountCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Account:
+    account = db.scalar(select(Account).where(Account.id == account_id, Account.user_id == user.id, Account.is_archived.is_(False)))
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    for field, value in payload.model_dump().items():
+        setattr(account, field, value)
+    db.commit()
+    db.refresh(account)
+    return account
+
+
 @app.delete("/api/accounts/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
 def archive_account(account_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
     account = db.scalar(select(Account).where(Account.id == account_id, Account.user_id == user.id, Account.is_archived.is_(False)))

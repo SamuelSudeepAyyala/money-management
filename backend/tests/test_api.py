@@ -29,6 +29,9 @@ def test_register_login_and_private_records() -> None:
     account = client.post("/api/accounts", headers=headers, json={"name": "Checking", "account_type": "checking", "currency": "USD", "opening_balance": "100.00"})
     assert account.status_code == 201
     account_id = account.json()["id"]
+    updated_account = client.put(f"/api/accounts/{account_id}", headers=headers, json={"name": "Primary checking", "account_type": "checking", "currency": "USD", "opening_balance": "125.00"})
+    assert updated_account.status_code == 200
+    assert updated_account.json()["name"] == "Primary checking"
     with engine.connect() as connection:
         raw_account = connection.execute(text("SELECT name, opening_balance FROM accounts WHERE id = :id"), {"id": account_id}).one()
         assert raw_account.name.startswith("v1:")
