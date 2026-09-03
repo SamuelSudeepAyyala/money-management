@@ -29,6 +29,7 @@ export const authApi = {
 export const financeApi = {
   accounts: () => request<ApiAccount[]>("/api/accounts"),
   createAccount: (account: Omit<ApiAccount, "id">) => request<ApiAccount>("/api/accounts", { method: "POST", body: JSON.stringify(account) }),
+  updateAccount: (id: string, account: Omit<ApiAccount, "id">) => request<ApiAccount>(`/api/accounts/${id}`, { method: "PUT", body: JSON.stringify(account) }),
   deleteAccount: (id: string) => request<void>(`/api/accounts/${id}`, { method: "DELETE" }),
   recurringBills: () => request<ApiRecurringBill[]>("/api/recurring-bills"),
   createRecurringBill: (bill: Omit<ApiRecurringBill, "id">) => request<ApiRecurringBill>("/api/recurring-bills", { method: "POST", body: JSON.stringify(bill) }),

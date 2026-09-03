@@ -11,4 +11,4 @@ export type Transaction = {
   notes?: string;
 };
 
-export type Account = { id: string; name: string; type: string; balance: number; currency: string };
+export type Account = { id: string; name: string; type: string; balance: number; openingBalance: number; currency: string };
