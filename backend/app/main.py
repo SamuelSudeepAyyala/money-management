@@ -12,7 +12,7 @@ from .db import Base, engine, get_db
 from .dependencies import current_user
 from .encryption_backfill import run_encryption_backfill
 from .encryption import lookup_digest
-from .models import Account, Budget, Goal, Loan, LoanPayment, RecurringBill, Transaction, User
+from .models import Account, Budget, Goal, Loan, LoanPayment, RecurringBill, Transaction, Transfer, User
 from .schemas import (
     AccountCreate,
     AccountResponse,
@@ -33,6 +33,8 @@ from .schemas import (
     TokenResponse,
     TransactionCreate,
     TransactionResponse,
+    TransferCreate,
+    TransferResponse,
     UserResponse,
 )
 from .security import create_access_token, hash_password, verify_password
@@ -123,6 +125,35 @@ def update_account(account_id: int, payload: AccountCreate, user: User = Depends
     db.commit()
     db.refresh(account)
     return account
+
+
+@app.get("/api/transfers", response_model=list[TransferResponse])
+def list_transfers(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Transfer]:
+    records = list(db.scalars(select(Transfer).where(Transfer.user_id == user.id).order_by(Transfer.id.desc())).all())
+    return sorted(records, key=lambda item: (item.occurred_on, item.id), reverse=True)
+
+
+@app.post("/api/transfers", response_model=TransferResponse, status_code=status.HTTP_201_CREATED)
+def create_transfer(payload: TransferCreate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Transfer:
+    if payload.from_account_id == payload.to_account_id:
+        raise HTTPException(status_code=422, detail="Source and destination accounts must be different")
+    accounts = db.scalars(select(Account).where(Account.id.in_([payload.from_account_id, payload.to_account_id]), Account.user_id == user.id, Account.is_archived.is_(False))).all()
+    if len(accounts) != 2:
+        raise HTTPException(status_code=404, detail="Both accounts must belong to you and be active")
+    transfer = Transfer(user_id=user.id, **payload.model_dump())
+    db.add(transfer)
+    db.commit()
+    db.refresh(transfer)
+    return transfer
+
+
+@app.delete("/api/transfers/{transfer_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_transfer(transfer_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> None:
+    transfer = db.scalar(select(Transfer).where(Transfer.id == transfer_id, Transfer.user_id == user.id))
+    if not transfer:
+        raise HTTPException(status_code=404, detail="Transfer not found")
+    db.delete(transfer)
+    db.commit()
 
 
 @app.delete("/api/accounts/{account_id}", status_code=status.HTTP_204_NO_CONTENT)

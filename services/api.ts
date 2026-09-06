@@ -1,5 +1,6 @@
 export type ApiUser = { id: number; email: string; display_name: string };
 export type ApiAccount = { id: number; name: string; account_type: string; currency: string; opening_balance: number; is_archived?: boolean };
+export type ApiTransfer = { id: number; from_account_id: number; to_account_id: number; amount: number; occurred_on: string; note?: string };
 export type ApiTransaction = { id: number; account_id: number; transaction_type: "expense" | "income"; amount: number; name: string; category: string; notes?: string; occurred_on: string };
 export type ApiBudget = { id: number; category: string; monthly_limit: number };
 export type ApiLoan = { id: number; name: string; remaining_balance: number; minimum_payment: number; interest_rate: number; due_date?: string };
@@ -31,6 +32,9 @@ export const financeApi = {
   createAccount: (account: Omit<ApiAccount, "id">) => request<ApiAccount>("/api/accounts", { method: "POST", body: JSON.stringify(account) }),
   updateAccount: (id: string, account: Omit<ApiAccount, "id">) => request<ApiAccount>(`/api/accounts/${id}`, { method: "PUT", body: JSON.stringify(account) }),
   deleteAccount: (id: string) => request<void>(`/api/accounts/${id}`, { method: "DELETE" }),
+  transfers: () => request<ApiTransfer[]>("/api/transfers"),
+  createTransfer: (transfer: Omit<ApiTransfer, "id">) => request<ApiTransfer>("/api/transfers", { method: "POST", body: JSON.stringify(transfer) }),
+  deleteTransfer: (id: string) => request<void>(`/api/transfers/${id}`, { method: "DELETE" }),
   recurringBills: () => request<ApiRecurringBill[]>("/api/recurring-bills"),
   createRecurringBill: (bill: Omit<ApiRecurringBill, "id">) => request<ApiRecurringBill>("/api/recurring-bills", { method: "POST", body: JSON.stringify(bill) }),
   deleteRecurringBill: (id: string) => request<void>(`/api/recurring-bills/${id}`, { method: "DELETE" }),

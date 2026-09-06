@@ -24,6 +24,7 @@ class User(Base):
     loan_payments: Mapped[list["LoanPayment"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     recurring_bills: Mapped[list["RecurringBill"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     goals: Mapped[list["Goal"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    transfers: Mapped[list["Transfer"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
 class Account(Base):
@@ -128,3 +129,16 @@ class RecurringBill(Base):
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     user: Mapped[User] = relationship(back_populates="recurring_bills")
+
+
+class Transfer(Base):
+    __tablename__ = "transfers"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    from_account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    to_account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    amount: Mapped[Decimal] = mapped_column(EncryptedDecimal())
+    occurred_on: Mapped[date] = mapped_column(EncryptedDate(), default=date.today)
+    note: Mapped[str | None] = mapped_column(EncryptedString(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    user: Mapped[User] = relationship(back_populates="transfers")
