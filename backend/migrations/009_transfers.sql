@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS transfers (id BIGSERIAL PRIMARY KEY, user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE, from_account_id BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE, to_account_id BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE, amount TEXT NOT NULL, occurred_on TEXT NOT NULL, note TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), CONSTRAINT transfers_different_accounts CHECK (from_account_id <> to_account_id));
+CREATE INDEX IF NOT EXISTS transfers_user_id_idx ON transfers(user_id);
+ALTER TABLE transfers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own transfers" ON transfers FOR ALL TO authenticated USING ((select auth.uid()) = user_id) WITH CHECK ((select auth.uid()) = user_id);

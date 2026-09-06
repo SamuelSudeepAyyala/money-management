@@ -46,6 +46,19 @@ class AccountResponse(AccountCreate):
     is_archived: bool = False
 
 
+class TransferCreate(BaseModel):
+    from_account_id: int
+    to_account_id: int
+    amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+    occurred_on: date = date.today()
+    note: str | None = Field(default=None, max_length=2000)
+
+
+class TransferResponse(TransferCreate):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+
+
 class TransactionCreate(BaseModel):
     account_id: int
     transaction_type: str = Field(pattern="^(expense|income)$")
