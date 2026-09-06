@@ -9,6 +9,7 @@ function mapRecords(accounts: ApiAccount[], transactions: ApiTransaction[], tran
   const uiTransfers: Transaction[] = transfers.map(transfer => ({ id: `transfer-${transfer.id}`, name: `Transfer to ${names.get(transfer.to_account_id) || "Unknown account"}`, category: "Transfer", date: transfer.occurred_on, amount: Number(transfer.amount), type: "transfer", account: `${names.get(transfer.from_account_id) || "Unknown account"} → ${names.get(transfer.to_account_id) || "Unknown account"}`, notes: transfer.note }));
   const balances = new Map<number, number>(accounts.map(account => [account.id, Number(account.opening_balance)]));
   transactions.forEach(transaction => balances.set(transaction.account_id, (balances.get(transaction.account_id) || 0) + (transaction.transaction_type === "income" ? Number(transaction.amount) : -Number(transaction.amount))));
+  transfers.forEach(transfer => { const amount = Number(transfer.amount); balances.set(transfer.from_account_id, (balances.get(transfer.from_account_id) || 0) - amount); balances.set(transfer.to_account_id, (balances.get(transfer.to_account_id) || 0) + amount); });
   const uiAccounts: Account[] = accounts.filter(account => !account.is_archived).map(account => ({ id: String(account.id), name: account.name, type: account.account_type, balance: balances.get(account.id) || 0, openingBalance: Number(account.opening_balance), currency: account.currency }));
   return { accounts: uiAccounts, transactions: [...uiTransactions, ...uiTransfers].sort((left, right) => right.date.localeCompare(left.date)) };
 }
