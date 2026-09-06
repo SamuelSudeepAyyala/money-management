@@ -2,9 +2,17 @@
   "name": "MoneyFlow",
   "short_name": "MoneyFlow",
   "description": "A calmer way to manage your money.",
-  "start_url": "/",
+  "start_url": "/money-management/",
+  "scope": "/money-management/",
   "display": "standalone",
   "background_color": "#f7f8fc",
   "theme_color": "#5874e8",
-  "icons": []
+  "icons": [
+    {
+      "src": "/money-management/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
