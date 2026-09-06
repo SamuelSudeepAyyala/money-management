@@ -8,12 +8,14 @@ class Settings(BaseSettings):
     access_token_minutes: int = 60
     environment: str = "development"
     seed_demo_data: bool = False
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,https://samuelsudeepayyala.github.io"
     encryption_key: str = Field(default="", validation_alias="MONEYFLOW_ENCRYPTION_KEY")
 
     @property
     def allowed_origins(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        origins = [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        production_origin = "https://samuelsudeepayyala.github.io"
+        return origins if production_origin in origins else [*origins, production_origin]
 
     @property
     def sqlalchemy_database_url(self) -> str:
